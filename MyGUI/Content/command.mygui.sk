@@ -1,0 +1,106 @@
+Options:
+	inventory: &6MyGUI
+Command /mygui [<int=1>]:
+	aliases: mg
+	trigger:
+		getMyGui(player, arg 1)
+
+Function getMyGui(player: player, page: int):
+	add {_player} to {mygui::mygui::*}
+	# Load GUI
+	set {_} to 10
+	loop 4 times:
+		add all integers between {_} and {_}+6 to {_s::*}
+		add 9 to {_}
+	set {_p} to 1
+	set {_index} to 1
+	loop {mygui::list::*}:
+		if {_p} is {_page}:
+			add loop-value to {_gui::*}
+		if {_index} >= size of {_s::*}:
+			add 1 to {_p}
+			set {_index} to 0
+		add 1 to {_index}
+	#
+	set {_calc1} to {_page}*(size of {_s::*})-size of {_s::*}
+	set {_calc2} to {_page}*(size of {_s::*})+1
+	if {mygui::list::%{_calc1}%} is set:
+		add 1 to {_check}
+	if {mygui::list::%{_calc2}%} is set:
+		add 2 to {_check}
+	if {_check} is not set:
+		{_page} is not 1
+		message "&7▎&c La page %{_page}%&c est innexistste" to {_player}
+		stop
+	#
+	# Border
+	set {_border} to a lime stained glass pane named "&r"
+	# Close
+	set {_close} to a barrier named "&cFermer"
+	# New
+	set {_new} to a slime ball named "&2✚ &aCréer une interface"
+	add " " to lore of {_new}
+	add "&7Partez de &bzéro&7 en" to lore of {_new}
+	add "&7créant votre interface," to lore of {_new}
+	add "&7et &bpersonnalisez-là&7 !" to lore of {_new}
+	# Import
+	set {_import} to an ender chest named "&6✚ &eImporter une interface"
+	add " " to lore of {_import}
+	add "&7Prenez une interface" to lore of {_import}
+	add "&bdéjà faites &7par un" to lore of {_import}
+	add "&bautre utilisateur" to lore of {_import}
+	add "&7depuis une &bsauvegarde&7 !" to lore of {_import}
+	add " " to lore of {_import}
+	add "&c✘ Fonctionnalité indisponible" to lore of {_import}
+	# Base
+	add all integers between 0 and 9 to {_b::*}
+	add all integers between 44 and 53 to {_b::*}
+	add 17 and 18 and 26 and 27 and 35 and 36 to {_b::*}
+	open chest inventory with 6 row with name "{@inventory} &f&l» &6Page %{_page}%" to {_player}
+	set slot {_b::*} of open inventory of {_player} to {_border}
+	set slot 3 of open inventory of {_player} to {_new}
+	set slot 5 of open inventory of {_player} to {_import}
+	set slot 49 of open inventory of {_player} to {_close}
+	# No GUI
+	if {mygui::list::*} is not set:
+		set {_no} to red dye named "&cAucune interface créé"
+		set slot 22 of open inventory of {_player} to {_no}
+		stop
+	set {_s} to first element of {_s::*}
+	set {_f} to 0
+	loop {_gui::*}:
+		while {_s::*} doesn't contain {_s}:
+			add 1 to {_s}
+			{_f} is size of {_s::*}
+			set {_} to true
+			stop loop
+		if {_} is true:
+			stop loop
+		set {_item} to chest named "&6&l%loop-value%"
+		set slot {_s} of open inventory of {_player} to {_item}
+		add 1 to {_s}
+		add 1 to {_f}
+	if {_check::back} is true:
+		set {_back} to an arrow named "&7Précédent"
+		set {mygui::inventory::%{_player}%::back} to {_page}
+		remove 1 from {mygui::inventory::%{_player}%::back}
+		set slot 48 of open inventory of {_player} to {_back}
+	if {_check::next} is true:
+		set {mygui::inventory::%{_player}%::next} to {_page}
+		add 1 to {mygui::inventory::%{_player}%::next}
+		set {_next} to an arrow named "&7Suivant"
+		set slot 50 of open inventory of {_player} to {_next}
+
+On inventory click:
+	name of event-inventory contain "{@inventory}"
+	if index of event-slot is 3:
+		make player execute command "/gui create"
+	else if index of event-slot is 48:
+		event-item is an arrow
+		getMyGui(player, {mygui::inventory::%player%::back})
+	else if index of event-slot is 49:
+		close player's inventory
+	else if index of event-slot is 50:
+		event-item is an arrow
+		getMyGui(player, {mygui::inventory::%player%::next})
+	cancel event
